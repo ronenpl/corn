@@ -8,21 +8,14 @@ int main(void) {
 	ChessBoard cb = new_board();
 
 	initialize_board(&cb);
-	from_fen(&cb, "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
+	from_fen(&cb, "1q6/2PPPP2/4K3/8/8/4k3/2pppp2/8 w - - 0 1");
 
-	make_move(&cb, move_from(A1, B1,EMPTY, 0, 0, 1, WR, EMPTY));
-	make_move(&cb, move_from(A8, B8,EMPTY, 0, 0, 1, BR, EMPTY));
-	make_move(&cb, move_from(B1, A1,EMPTY, 0, 0, 1, WR, EMPTY));
-	make_move(&cb, move_from(B8, A8,EMPTY, 0, 0, 1, BR, EMPTY));
+	make_move(&cb, move_from(C7, B8, WQ, 0, 0, 0, WP, BQ));
+	make_move(&cb, move_from(C2, C1, BQ, 0, 0, 0, BP, EMPTY));
+	display_board(&cb);
 
-	show_diagnostics(&cb);
 	unmake_move(&cb);
-	show_diagnostics(&cb);
-	unmake_move(&cb);
-	show_diagnostics(&cb);
-	unmake_move(&cb);
-	show_diagnostics(&cb);
-
+	display_board(&cb);
 	return 0;
 
 }

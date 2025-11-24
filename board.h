@@ -93,7 +93,7 @@ void show_diagnostics(ChessBoard *cb);
 
 void add_piece(ChessBoard *cb, int piece_id, int sq);
 void remove_piece(ChessBoard *cb, int sq);
-void move_piece(ChessBoard *cb, int piece_type, int from, int to);
+void move_piece(ChessBoard *cb, int from, int to);
 
 void make_move(ChessBoard *cb, Move move);
 void unmake_move(ChessBoard *cb);

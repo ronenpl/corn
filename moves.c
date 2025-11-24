@@ -64,9 +64,9 @@ void remove_piece(ChessBoard *cb, int sq) {
     cb->pieces[piece_id] &= (~(1ULL << i120_to_i64[sq]));
 }
 
-void move_piece(ChessBoard *cb, int piece_type, int from, int to) {
+void move_piece(ChessBoard *cb, int from, int to) {
 
-	add_piece(cb, piece_type, to);
+	add_piece(cb, cb->state[from], to);
 	remove_piece(cb, from);
 
 }
@@ -103,7 +103,7 @@ void make_move(ChessBoard *cb, Move move) {
 
     // We make the move. Pretty simple:
 
-	move_piece(cb, piece, from, to);
+	move_piece(cb, from, to);
 
     // Handle promotions:
 
@@ -116,19 +116,19 @@ void make_move(ChessBoard *cb, Move move) {
 
 	if (move & CASTLE_FLAG) {
 		if (to == C1) {
-			move_piece(cb, WR, A1, D1);
+			move_piece(cb, A1, D1);
 		}
 
 		else if (to == G1) {
-			move_piece(cb, WR, H1, F1);
+			move_piece(cb, H1, F1);
 		}
 
 		else if (to == C8) {
-			move_piece(cb, BR, A8, D8);
+			move_piece(cb, A8, D8);
 		}
 
 		else if (to == G8) {
-			move_piece(cb, BR, H8, F8);
+			move_piece(cb, H8, F8);
 		}
 	}
 
@@ -241,7 +241,7 @@ void unmake_move(ChessBoard *cb) {
 
 	// Unmake the move:
 
-	move_piece(cb, piece, to, from);
+	move_piece(cb, to, from);
 
 	// Handle Captures:
 
@@ -254,19 +254,19 @@ void unmake_move(ChessBoard *cb) {
 
 	if (prev_move & CASTLE_FLAG) {
 		if (to == C1) {
-			move_piece(cb, WR, D1, A1);
+			move_piece(cb, D1, A1);
 		}
 
 		else if (to == G1) {
-			move_piece(cb, WR, F1, H1);
+			move_piece(cb, F1, H1);
 		}
 
 		else if (to == C8) {
-			move_piece(cb, BR, D8, A8);
+			move_piece(cb, D8, A8);
 		}
 
 		else if (to == G8) {
-			move_piece(cb, BR, F8, H8);
+			move_piece(cb, F8, H8);
 		}
 	}
 
@@ -283,6 +283,7 @@ void unmake_move(ChessBoard *cb) {
 		}
 	}
 	// Handle Promotions:
+
 	if (Prom(prev_move) != EMPTY) {
 	    remove_piece(cb, from);
 	    add_piece(cb, piece, from);
