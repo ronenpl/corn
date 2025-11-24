@@ -96,6 +96,9 @@ void remove_piece(ChessBoard *cb, int sq);
 void move_piece(ChessBoard *cb, int piece_type, int from, int to);
 
 void make_move(ChessBoard *cb, Move move);
+void unmake_move(ChessBoard *cb);
+char update_castling_rights(int from, int to, int piece_color, int piece_id, int move);
+
 Move move_from(
 
     int from, int to, int prom,
@@ -119,8 +122,8 @@ void display_move(Move move);
 
 #define CASTLE_FLAG 1 << 20
 
-#define Capture(m) (m & 0xF00000) >> 21
-#define Piece(m) (m & 0xF000000) >> 25
+#define Piece(m) (m & 0xF00000) >> 21
+#define Capture(m) (m & 0x1E000000) >> 25
 
 
 #endif

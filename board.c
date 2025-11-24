@@ -16,7 +16,7 @@ void initialize_board(ChessBoard *cb) {
             cb->state[i] = BORDER;
         } else {
             cb->state[i] = EMPTY;
-        }      
+        }
     }
 }
 
@@ -24,13 +24,13 @@ void initialize_board(ChessBoard *cb) {
 
 void display_board(ChessBoard *cb) {
     const char *display_characters[14] = {
-        
+
         "P", "R", "K", "B", "Q", "N", /* white: P,R,K,B,Q,N */
         "p", "r", "k", "b", "q", "n", /* black: p,r,k,b,q,n */
 
         ".",
         "#"
-        
+
     };
 
     for (int rank = 9; rank > 1; rank--) {
@@ -40,6 +40,7 @@ void display_board(ChessBoard *cb) {
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 
@@ -55,7 +56,7 @@ void from_fen(ChessBoard *cb, char *fen) {
 
             case 'P': add_piece(cb, WP, index); file++; break;
             case 'R': add_piece(cb, WR, index); file++; break;
-            
+
             case 'K': add_piece(cb, WK, index); file++; break;
             case 'B': add_piece(cb, WB, index); file++; break;
 
@@ -67,7 +68,7 @@ void from_fen(ChessBoard *cb, char *fen) {
 
             case 'k': add_piece(cb, BK, index); file++; break;
             case 'b': add_piece(cb, BB, index); file++; break;
-            
+
             case 'q': add_piece(cb, BQ, index); file++; break;
             case 'n': add_piece(cb, BN, index); file++; break;
 
@@ -77,7 +78,7 @@ void from_fen(ChessBoard *cb, char *fen) {
 
         }
 
-        
+
         fen++;
     }
 
@@ -101,7 +102,7 @@ void from_fen(ChessBoard *cb, char *fen) {
             case 'q': cb->castle_perms |= BQC; break;
 
         }
-        
+
         fen++;
     }
 
@@ -132,13 +133,13 @@ void from_fen(ChessBoard *cb, char *fen) {
             case '-': file = -1; break; //flag that there is no ep square!
 
         }
-        
+
         fen++;
     }
 
-    if (file != -1) {cb->ep_square = (rank * 10 + file);}   
+    if (file != -1) {cb->ep_square = (rank * 10 + file);}
     fen++;
-    
+
     int nr_of_moves = 0;
     while (fen[0] != ' ') {
 
@@ -165,7 +166,7 @@ void from_fen(ChessBoard *cb, char *fen) {
         nr_of_moves += a;
 
         fen++;
-        
+
     }
 
     cb->fullmoves = nr_of_moves;
@@ -182,13 +183,11 @@ void show_diagnostics(ChessBoard *cb) {
     printf("%s", cb->castle_perms & (WQC)? "Q" : "-");
     printf("%s", cb->castle_perms & (BKC)? "k": "-");
     printf("%s\n", cb->castle_perms & (BQC)? "q" : "-");
-   
+
     printf("ep: %d\n", cb->ep_square);
 
     printf("half-moves: %d\n", cb->half_move_clock);
 
     printf("full-moves: %d\n", cb->fullmoves);
-  
+
 }
-
-
