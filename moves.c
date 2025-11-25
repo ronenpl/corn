@@ -33,7 +33,6 @@ Move move_from(int from, int to, int prom, char ep, char double_push, char castl
     return move;
 }
 
-
 void display_move(Move move) {
 
     int cursor = 29;

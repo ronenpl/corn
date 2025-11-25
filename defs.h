@@ -4,6 +4,7 @@
 
 /* General Purpose Constants and Definitions */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -21,10 +22,7 @@ typedef signed char int8;
 /* ENUMS */
 
 typedef enum {
-    NORTH,
-    SOUTH,
-    EAST,
-    WEST
+	N, NE, E, SE, S, SW, W, NW
 } Drctn;
 
 enum {WP, WR, WK, WB, WQ, WN, BP, BR, BK, BB, BQ, BN, EMPTY, BORDER};
@@ -46,7 +44,6 @@ enum {
 
 
 
-
 // General Utils (utils.c)
 
 static inline int get_rank(int index) {
@@ -63,13 +60,19 @@ static inline int is_white(int piece_id) {
 
 // Bitboard Utils (bitboard_utils.c)
 
+static inline int BitScanForward(U64 bb) {
+    return __builtin_ctzll(bb);
+}
+static inline int BitScanReverse(U64 bb) {
+    return 63 - __builtin_clzll(bb);
+}
 void print_bitboard(U64 bb);
 
 /* Tables */
 
 extern int8_t i120_to_i64[120];
 
-
+extern int8_t dir_table[8][64];
 // Assert Macro
 
 #define RED   "\x1b[31m"
