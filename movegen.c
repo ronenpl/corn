@@ -6,41 +6,35 @@ U64 knight_attacks[64];
 U64 king_attacks[64];
 
 
-void __attribute((constructor)) init_ray_table(void) {
+void __attribute((constructor)) InitRayTable(void) {
 	const int dir_offsets[8] = {10, 11, 1, -11, -10, -9, -1, 9};
 
 	for (int dir = 0; dir < 8; dir++) {
-
 		for (int sq = 0; sq < 120; sq++) {
 			U64 bb = 0ULL;
 			int ds = sq;
-			int sq64 = i120_to_i64[sq];
+			int sq64 = SQ120_TO_SQ64[sq];
 
-			if (sq64 == -1) {
-
-				continue;
-			}
-
+			if (sq64 == -1) {continue;}
 
 			while (1) {
 
 				ds += dir_offsets[dir];
 
 				if (sq < 0 ||sq >=120) { break; }
-				if (i120_to_i64[ds] == -1) { break;}
+				if (SQ120_TO_SQ64[ds] == -1) { break;}
 
-				bb |= (1ULL << i120_to_i64[ds]);
+				bb |= (1ULL << SQ120_TO_SQ64[ds]);
 
 			}
 
 			ray_attacks[dir][sq64] = bb;
 
-
 		}
-
 	}
 }
-void __attribute((constructor)) init_knight_table(void) {
+
+void __attribute((constructor)) InitKnightTable(void) {
 	const int knight_offsets[8] = {21, 12, -8, -19, -21, -12, 8, 19};
 
 	for (int sq = 21; sq < 99; sq++) {
@@ -48,22 +42,37 @@ void __attribute((constructor)) init_knight_table(void) {
 	    U64 bb = 0;
 
 	    for (int dir = 0; dir < 8; dir++) {
-			int new_square = i120_to_i64[sq + knight_offsets[dir]];
 
-			if (new_square == -1) {
-			    continue;
-			}
+			int new_square = SQ120_TO_SQ64[sq + knight_offsets[dir]];
+
+			if (new_square == -1) {continue;}
 			bb |= (1ULL << new_square);
-
 		}
-		knight_attacks[i120_to_i64[sq]] = bb;
-
+		knight_attacks[SQ120_TO_SQ64[sq]] = bb;
 	}
-
 }
 
-U64 get_positive_ray_attacks(Drctn dir, int sq120, U64 occupied) {
-    int sq64 = i120_to_i64[sq120];
+void __attribute((constructor)) InitKingTable(void) {
+    const int dir_offsets[8] = {10, 11, 1, -9, -11, -10, -1, 9};
+
+	for (int sq = 21; sq < 99; sq++) {
+
+	    U64 bb = 0;
+
+	    for (int dir = 0; dir < 8; dir++) {
+
+			int new_square = SQ120_TO_SQ64[sq + dir_offsets[dir]];
+			if (new_square == -1) {continue;}
+
+			bb |= (1ULL << new_square);
+		}
+		king_attacks[SQ120_TO_SQ64[sq]] = bb;
+	}
+}
+
+
+U64 GetPositiveRayAttacks(Drctn dir, int sq120, U64 occupied) {
+    int sq64 = SQ120_TO_SQ64[sq120];
 	U64 attacks = ray_attacks[dir][sq64];
 	U64 blockers = attacks & occupied;
 
@@ -73,9 +82,9 @@ U64 get_positive_ray_attacks(Drctn dir, int sq120, U64 occupied) {
 
 }
 
-U64 get_negative_ray_attacks(Drctn dir, int sq120, U64 occupied) {
+U64 GetNegativeRayAttacks(Drctn dir, int sq120, U64 occupied) {
 
-    int sq64 = i120_to_i64[sq120];
+    int sq64 = SQ120_TO_SQ64[sq120];
 	U64 attacks = ray_attacks[dir][sq64];
 	U64 blockers = attacks & occupied;
 

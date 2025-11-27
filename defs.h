@@ -46,15 +46,15 @@ enum {
 
 // General Utils (utils.c)
 
-static inline int get_rank(int index) {
+static inline int GetRank(int index) {
     return index / 10;
 }
 
-static inline int get_file(int index) {
+static inline int GetFile(int index) {
     return index % 10;
 }
 
-static inline int is_white(int piece_id) {
+static inline int IsWhite(int piece_id) {
     return piece_id < BP;
 }
 
@@ -63,14 +63,22 @@ static inline int is_white(int piece_id) {
 static inline int BitScanForward(U64 bb) {
     return __builtin_ctzll(bb);
 }
+
 static inline int BitScanReverse(U64 bb) {
     return 63 - __builtin_clzll(bb);
 }
-void print_bitboard(U64 bb);
+
+static inline int PopLSB(U64 *bb) {
+    int index = BitScanForward(*bb);
+    *bb &= *bb - 1;
+    return index;
+}
+
+void PrintBitboard(U64 bb);
 
 /* Tables */
 
-extern int8_t i120_to_i64[120];
+extern int8_t SQ120_TO_SQ64[120];
 
 extern int8_t dir_table[8][64];
 // Assert Macro

@@ -3,7 +3,7 @@
 // The header for this file is contained within board.h
 
 
-Move move_from(int from, int to, int prom, char ep, char double_push, char castle, int piece, int captured) {
+Move MoveFrom(int from, int to, int prom, char ep, char double_push, char castle, char capture, int piece) {
 
     Move move = 0;
 
@@ -23,12 +23,9 @@ Move move_from(int from, int to, int prom, char ep, char double_push, char castl
 	move |= ep << 18;
 	move |= double_push << 19;
     move |= castle << 20;
+    move |= capture << 21;
 
-    // piece stuff
-
-    move |= piece << 21;
-
-    move |= captured << 25;
+    move |= piece << 22;
 
     return move;
 }
@@ -50,29 +47,34 @@ void display_move(Move move) {
 
 
 }
-void add_piece(ChessBoard *cb, int piece_id, int sq) {
+
+void AddPiece(ChessBoard *cb, int piece_id, int sq) {
 
     cb->state[sq] = piece_id;
-    cb->pieces[piece_id] |= (1ULL << i120_to_i64[sq]);
+    cb->pieces[piece_id] |= (1ULL << SQ120_TO_SQ64[sq]);
 
 }
 
-void remove_piece(ChessBoard *cb, int sq) {
+void RemovePiece(ChessBoard *cb, int sq) {
     int piece_id = cb->state[sq];
     cb->state[sq] = EMPTY;
-    cb->pieces[piece_id] &= (~(1ULL << i120_to_i64[sq]));
+    cb->pieces[piece_id] &= (~(1ULL << SQ120_TO_SQ64[sq]));
 }
 
-void move_piece(ChessBoard *cb, int from, int to) {
+void MovePiece(ChessBoard *cb, int from, int to) {
 
-	add_piece(cb, cb->state[from], to);
-	remove_piece(cb, from);
+	AddPiece(cb, cb->state[from], to);
+	RemovePiece(cb, from);
 
 }
 
 
-void make_move(ChessBoard *cb, Move move) {
+void MakeMove(ChessBoard *cb, Move move) {
 
+    int from = From(move);
+    int to = To(move);
+
+    int is_capture_move = ((move & CAPTURE_FLAG) != 0);
 
 	// Before we do anything, we store previous state data to unmake the move later.
 	cb->history[cb->undo_top++] = (Undo) {
@@ -80,54 +82,53 @@ void make_move(ChessBoard *cb, Move move) {
 			.move = move,
 		   	.castle_perms = cb->castle_perms,
 		   	.ep_square = cb->ep_square,
+			.captured_piece = (is_capture_move)? cb->state[to] : EMPTY,
 		   	.half_move_clock = cb->half_move_clock
 	};
 
 
 
-    int from = From(move);
-    int to = To(move);
-    int captured = Capture(move);
+
     // We extract piece data.
 
     int piece = cb->state[from];
-    int piece_color = (is_white(piece));
+    int piece_color = (IsWhite(piece));
 
 	// Handle Regular Captures (We do this before making the move to update bitboards):
 
-	if (captured != EMPTY) {
+	if (move & CAPTURE_FLAG) {
 
-		remove_piece(cb, to);
+		RemovePiece(cb, to);
 	}
 
     // We make the move. Pretty simple:
 
-	move_piece(cb, from, to);
+	MovePiece(cb, from, to);
 
     // Handle promotions:
 
     if (Prom(move) != EMPTY) {
-		remove_piece(cb, to);
-    	add_piece(cb, Prom(move), to);
+		RemovePiece(cb, to);
+    	AddPiece(cb, Prom(move), to);
     }
 
 	// Handle Castling:
 
 	if (move & CASTLE_FLAG) {
 		if (to == C1) {
-			move_piece(cb, A1, D1);
+			MovePiece(cb, A1, D1);
 		}
 
 		else if (to == G1) {
-			move_piece(cb, H1, F1);
+			MovePiece(cb, H1, F1);
 		}
 
 		else if (to == C8) {
-			move_piece(cb, A8, D8);
+			MovePiece(cb, A8, D8);
 		}
 
 		else if (to == G8) {
-			move_piece(cb, H8, F8);
+			MovePiece(cb, H8, F8);
 		}
 	}
 
@@ -136,11 +137,11 @@ void make_move(ChessBoard *cb, Move move) {
 	if (move & EP_FLAG) {
 		if (piece_color == WHITE) {
 
-			remove_piece(cb, to - 10);
+		RemovePiece(cb, to - 10);
 
 		} else {
 
-			remove_piece(cb, to + 10);
+		RemovePiece(cb, to + 10);
 		}
 	}
 
@@ -161,7 +162,7 @@ void make_move(ChessBoard *cb, Move move) {
 
 	// Handle Fifty Move Clock and Fullmove counter:
 
-	if ((piece == WP) || (piece == BP) || (captured != EMPTY)) {
+	if ((piece == WP) || (piece == BP) || (is_capture_move)) {
 
 		cb->half_move_clock = 0;
 
@@ -176,14 +177,14 @@ void make_move(ChessBoard *cb, Move move) {
 
 	}
 
-  cb->castle_perms &= update_castling_rights(from, to, piece_color, piece, captured);
+  cb->castle_perms &= UpdateCastlingRights(from, to, piece_color, piece, is_capture_move);
 
     // Toggle side:
 
   cb->side ^= 1; // Switch side
 }
 
-char update_castling_rights(int from, int to, int piece_color, int piece_id, int captured) {
+char UpdateCastlingRights(int from, int to, int piece_color, int piece_id, int is_capture_move) {
 
 	char castleperm = 0xF;
 
@@ -205,11 +206,9 @@ char update_castling_rights(int from, int to, int piece_color, int piece_id, int
 		if (from == H8) castleperm &= (~BKC);
 	}
 
-    if (captured == WR) {
+    if (is_capture_move) {
         if (to == A1) castleperm &= ~WQC;
         if (to == H1) castleperm &= ~WKC;
-    }
-    if (captured == BR) {
         if (to == A8) castleperm &= ~BQC;
         if (to == H8) castleperm &= ~BKC;
     }
@@ -217,7 +216,7 @@ char update_castling_rights(int from, int to, int piece_color, int piece_id, int
 	return castleperm;
 }
 
-void unmake_move(ChessBoard *cb) {
+void UnmakeMove(ChessBoard *cb) {
 
 	// Restore the side to what it was before the move was made
 
@@ -234,38 +233,37 @@ void unmake_move(ChessBoard *cb) {
 	int to = To(prev_move);
 
 	char piece = Piece(prev_move);
-	char piece_color = is_white(piece);
+	char piece_color = IsWhite(piece);
 
-	char captured = Capture(prev_move);
+	char captured = prev_pos.captured_piece;
 
 	// Unmake the move:
 
-	move_piece(cb, to, from);
+	MovePiece(cb, to, from);
 
 	// Handle Captures:
 
 	if (captured != EMPTY) {
-		add_piece(cb, captured, to);
-
+		AddPiece(cb, captured, to);
 	}
 
 	// Handle Castling:
 
 	if (prev_move & CASTLE_FLAG) {
 		if (to == C1) {
-			move_piece(cb, D1, A1);
+			MovePiece(cb, D1, A1);
 		}
 
 		else if (to == G1) {
-			move_piece(cb, F1, H1);
+			MovePiece(cb, F1, H1);
 		}
 
 		else if (to == C8) {
-			move_piece(cb, D8, A8);
+			MovePiece(cb, D8, A8);
 		}
 
 		else if (to == G8) {
-			move_piece(cb, F8, H8);
+			MovePiece(cb, F8, H8);
 		}
 	}
 
@@ -274,18 +272,18 @@ void unmake_move(ChessBoard *cb) {
 	if (prev_move & EP_FLAG) {
 		if (piece_color == WHITE) {
 
-			add_piece(cb, BP, to - 10);
+			AddPiece(cb, BP, to - 10);
 
 		} else {
 
-			add_piece(cb, WP, to + 10);
+			AddPiece(cb, WP, to + 10);
 		}
 	}
 	// Handle Promotions:
 
 	if (Prom(prev_move) != EMPTY) {
-	    remove_piece(cb, from);
-	    add_piece(cb, piece, from);
+	 RemovePiece(cb, from);
+	    AddPiece(cb, piece, from);
 	}
 
 	//Restore previous board state stuff

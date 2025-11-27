@@ -4,7 +4,6 @@
 #include "defs.h"
 #include <stdint.h>
 
-
 /* UNDO STRUCT */
 
 
@@ -14,8 +13,10 @@ typedef struct {
 
 	char castle_perms;
 	U16 ep_square;
+	char captured_piece;
 
 	int half_move_clock;
+
 
 } Undo;
 
@@ -52,15 +53,16 @@ typedef struct {
 
 } ChessBoard;
 
+
 /* Move Encoding Scheme */
 
 typedef uint32_t Move;
 
 /* A move is defined as:
-  3 + 4  +  4 + 3 + 4  +  7   +  7   = 32 bits (int)
- 000 0000 0000 000 0000 0000000 0000000
-     +--+ +--+ +-+ +--+ +-----+ +-----+
-     cap piece flags prom  to   from
+  3 + 3  +  4 + 4 + 4  +  7   +  7   = 32 bits (int)
+ 000 000 0000 0000 0000 0000000 0000000
+         +--+ +--+ +--+ +-----+ +-----+
+         piece flags prom  to   from
 
 
     from: the source square; where the piece is coming from.
@@ -69,41 +71,53 @@ typedef uint32_t Move;
 
     prom: the id of the promoting piece (EMPTY if not promotion)
 
-    flags:  0 <- castle -- 0 <- en passant -- 0 <- double push
+    flags:  0 <- castle -- 0 <- en passant -- 0 <- double push -- 0 <- capture
 
     piece: the id of the moving piece.
 
-    capture: the id of the captured piece.
+
 */
 
+/*
+-----------+
+Moves List |
+-----------+
+*/
+
+typedef struct {
+
+    Move list[MAXMOVES];
+    int curr_move_index;
+
+} Movelist;
 
 
 
 /* BOARD METHODS*/
 
-ChessBoard new_board(void);
-void initialize_board(ChessBoard *cb);
-void display_board(ChessBoard *cb);
+ChessBoard NewBoard(void);
+void InitBoard(ChessBoard *cb);
+void PrintBoard(ChessBoard *cb);
 
 
-void from_fen(ChessBoard *cb, char *fen);
-void show_diagnostics(ChessBoard *cb);
+void FromFen(ChessBoard *cb, char *fen);
+void ShowDiagnostics(ChessBoard *cb);
 
 /* MOVE METHODS */
 
-void add_piece(ChessBoard *cb, int piece_id, int sq);
-void remove_piece(ChessBoard *cb, int sq);
-void move_piece(ChessBoard *cb, int from, int to);
+void AddPiece(ChessBoard *cb, int piece_id, int sq);
+void RemovePiece(ChessBoard *cb, int sq);
+void MovePiece(ChessBoard *cb, int from, int to);
 
-void make_move(ChessBoard *cb, Move move);
-void unmake_move(ChessBoard *cb);
-char update_castling_rights(int from, int to, int piece_color, int piece_id, int move);
+void MakeMove(ChessBoard *cb, Move move);
+void UnmakeMove(ChessBoard *cb);
+char UpdateCastlingRights(int from, int to, int piece_color, int piece_id, int move);
 
-Move move_from(
+Move MoveFrom(
 
     int from, int to, int prom,
-    char ep, char double_push, char castle,
-    int piece, int captured
+    char ep, char double_push, char castle, char is_capture,
+    int piece
 );
 
 void display_move(Move move);
@@ -121,9 +135,9 @@ void display_move(Move move);
 #define DPUSH_FLAG 1 << 19
 
 #define CASTLE_FLAG 1 << 20
+#define CAPTURE_FLAG 1 << 21
 
-#define Piece(m) (m & 0xF00000) >> 21
-#define Capture(m) (m & 0x1E000000) >> 25
+#define Piece(m) (m & 0x3C00000) >> 22
 
 
 #endif

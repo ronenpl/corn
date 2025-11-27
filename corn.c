@@ -3,13 +3,15 @@
 #include "board.h"
 #include "movegen.h"
 
+char *STARTPOS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 int main(void) {
 
-	ChessBoard cb = new_board();
+	ChessBoard cb = NewBoard();
 
-	initialize_board(&cb);
+	InitBoard(&cb);
 
-	from_fen(&cb, "r3k2r/3p1ppp/p1n1pn2/1p2Pb2/4P3/2N2N2/PP3PPP/R2Q1RK1 w kq b6 0 12");
+	FromFen(&cb, STARTPOS);
 
 	// U64 occupancy = 0;
 
@@ -18,8 +20,17 @@ int main(void) {
 
 	// }
 
-	display_board(&cb);
-	print_bitboard(knight_attacks[28]);
+	U64 bb = knight_attacks[SQ120_TO_SQ64[E5]];
+
+	PrintBitboard(bb);
+
+	printf("%d\n",PopLSB(&bb));
+
+	PrintBitboard(bb);
+
+
+	ShowDiagnostics(&cb);
+
 	return 0;
 
 }
