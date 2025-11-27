@@ -5,9 +5,9 @@ the classical approach, as well as advanced search and evaluation features.
 
 ###Checklist:
 
-[x] Board representation finished
-[x] Move making and undoing tested and working
-[ ] Move generation fully tested and working
-[ ] Evaluation function
-[ ] Search Function
+[x] Board representation finished  
+[x] Move making and undoing tested and working  
+[ ] Move generation fully tested and working  
+[ ] Evaluation function  
+[ ] Search Function  
 [ ] Optimizations, quiesence search / iterative deepening, pruning etc.  
