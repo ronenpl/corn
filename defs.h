@@ -42,6 +42,9 @@ enum {
   A8 = 91, B8, C8, D8, E8, F8, G8, H8
 };
 
+static const U64 RANK_1 = 0xFFULL;
+
+static const U64 FILE_A = 0x0101010101010101ULL;
 
 
 // General Utils (utils.c)
@@ -79,8 +82,7 @@ void PrintBitboard(U64 bb);
 /* Tables */
 
 extern int8_t SQ120_TO_SQ64[120];
-
-extern int8_t dir_table[8][64];
+extern int8_t SQ64_TO_SQ120[64];
 // Assert Macro
 
 #define RED   "\x1b[31m"

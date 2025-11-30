@@ -10,4 +10,4 @@ the classical approach, as well as advanced search and evaluation features.
 [ ] Move generation fully tested and working  
 [ ] Evaluation function  
 [ ] Search Function  
-[ ] Optimizations, quiesence search / iterative deepening, pruning etc.  
+[ ] Optimizations, quiesence search / iterative deepening, pruning etc.

@@ -10,26 +10,17 @@ int main(void) {
 	ChessBoard cb = NewBoard();
 
 	InitBoard(&cb);
-
 	FromFen(&cb, STARTPOS);
 
-	// U64 occupancy = 0;
+	Movelist moves = {.list = {0}, .curr_move_index = 0};
 
-	// for (int i = 0; i < EMPTY; i++) {
-	//     occupancy |= cb.pieces[i];
+	GeneratePawnMoves(&cb, &moves);
+	// PrintBoard(&cb);
+	// for (int i = 0; i < moves.curr_move_index; i++) {
+
+	// display_move(moves.list[i]);
 
 	// }
-
-	U64 bb = knight_attacks[SQ120_TO_SQ64[E5]];
-
-	PrintBitboard(bb);
-
-	printf("%d\n",PopLSB(&bb));
-
-	PrintBitboard(bb);
-
-
-	ShowDiagnostics(&cb);
 
 	return 0;
 

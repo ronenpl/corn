@@ -1,5 +1,7 @@
 #include "movegen.h"
 #include "defs.h"
+#include "board.h"
+
 
 U64 ray_attacks[8][64];
 U64 knight_attacks[64];
@@ -72,6 +74,7 @@ void __attribute((constructor)) InitKingTable(void) {
 
 
 U64 GetPositiveRayAttacks(Drctn dir, int sq120, U64 occupied) {
+
     int sq64 = SQ120_TO_SQ64[sq120];
 	U64 attacks = ray_attacks[dir][sq64];
 	U64 blockers = attacks & occupied;
@@ -92,4 +95,48 @@ U64 GetNegativeRayAttacks(Drctn dir, int sq120, U64 occupied) {
 
 	return attacks ^ ray_attacks[dir][sq];
 
+}
+
+void GeneratePseudoLegal(ChessBoard *cb, Movelist *moves) {
+
+    GeneratePawnMoves(cb, moves);
+    // TODO states we need to handle: regular pieces (obv), en passant, castling, promotion
+}
+
+void GeneratePawnMoves(ChessBoard *cb, Movelist *moves) {
+    U64 occupancy = cb->occupancy[BOTH];
+    U64 empty = ~occupancy;
+
+    if (cb->side) {
+
+        U64 white_pawns = cb->pieces[WP] & (~(RANK_1 << 56)); // Save promotion for later
+
+        U64 single_push = (white_pawns << 8) & empty;
+
+        while (single_push) {
+            int target = SQ64_TO_SQ120[PopLSB(&single_push)];
+            moves->list[moves->curr_move_index++] = MoveFrom(target - 10, target, EMPTY, 0, 0, 0, 0, EMPTY);
+        }
+
+        U64 double_push = (white_pawns << 16) & (empty) & (empty << 8) & (RANK_1 << 24);
+
+        while (double_push) {
+            int target = SQ64_TO_SQ120[PopLSB(&double_push)];
+            moves->list[moves->curr_move_index++] = MoveFrom(target - 20, target, EMPTY, 0, 1, 0, 0, EMPTY);
+        }
+
+        U64 left_caps = (white_pawns << 7) & ((~(FILE_A)) << 7) & cb->occupancy[BLACK];
+
+        while (left_caps) {
+            int target = SQ64_TO_SQ120[PopLSB(&left_caps)];
+            moves->list[moves->curr_move_index++] = MoveFrom(target - 9, target, EMPTY, 0, 0, 0, 1, EMPTY);
+        }
+
+        U64 right_caps = ((white_pawns << 9) & (~FILE_A)) & cb->occupancy[BLACK];
+
+        while (right_caps) {
+            int target = SQ64_TO_SQ120[PopLSB(&right_caps)];
+            moves->list[moves->curr_move_index++] = MoveFrom(target - 9, target, EMPTY, 0, 0, 0, 1, EMPTY);
+        }
+    }
 }
