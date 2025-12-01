@@ -12,15 +12,21 @@ int main(void) {
 	InitBoard(&cb);
 	FromFen(&cb, STARTPOS);
 
-	Movelist moves = {.list = {0}, .curr_move_index = 0};
+	MakeMove(&cb, MoveFrom(E2, E4, 0, DPUSH));
+	ShowDiagnostics(&cb);
+	MakeMove(&cb, MoveFrom(D7, D5, 0, DPUSH));
+	ShowDiagnostics(&cb);
+	MakeMove(&cb, MoveFrom(E4, E5, 0, DPUSH));
+	ShowDiagnostics(&cb);
+	MakeMove(&cb, MoveFrom(F7, F5, 0, DPUSH));
+	ShowDiagnostics(&cb);
+	MakeMove(&cb, MoveFrom(E5, F6, 0, EP));
 
-	GeneratePawnMoves(&cb, &moves);
-	// PrintBoard(&cb);
-	// for (int i = 0; i < moves.curr_move_index; i++) {
+	ShowDiagnostics(&cb);
 
-	// display_move(moves.list[i]);
+	UnmakeMove(&cb);
 
-	// }
+	ShowDiagnostics(&cb);
 
 	return 0;
 

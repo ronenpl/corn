@@ -72,7 +72,6 @@ void __attribute((constructor)) InitKingTable(void) {
 	}
 }
 
-
 U64 GetPositiveRayAttacks(Drctn dir, int sq120, U64 occupied) {
 
     int sq64 = SQ120_TO_SQ64[sq120];
@@ -90,7 +89,6 @@ U64 GetNegativeRayAttacks(Drctn dir, int sq120, U64 occupied) {
     int sq64 = SQ120_TO_SQ64[sq120];
 	U64 attacks = ray_attacks[dir][sq64];
 	U64 blockers = attacks & occupied;
-
 	int sq = BitScanReverse(blockers | 1);
 
 	return attacks ^ ray_attacks[dir][sq];
@@ -108,35 +106,30 @@ void GeneratePawnMoves(ChessBoard *cb, Movelist *moves) {
     U64 empty = ~occupancy;
 
     if (cb->side) {
-
         U64 white_pawns = cb->pieces[WP] & (~(RANK_1 << 56)); // Save promotion for later
 
         U64 single_push = (white_pawns << 8) & empty;
-
         while (single_push) {
             int target = SQ64_TO_SQ120[PopLSB(&single_push)];
-            moves->list[moves->curr_move_index++] = MoveFrom(target - 10, target, EMPTY, 0, 0, 0, 0, EMPTY);
+            moves->list[moves->curr_move_index++] = MoveFrom(target - 8, target, 0, REGULAR );
         }
 
         U64 double_push = (white_pawns << 16) & (empty) & (empty << 8) & (RANK_1 << 24);
-
         while (double_push) {
             int target = SQ64_TO_SQ120[PopLSB(&double_push)];
-            moves->list[moves->curr_move_index++] = MoveFrom(target - 20, target, EMPTY, 0, 1, 0, 0, EMPTY);
+            moves->list[moves->curr_move_index++] = MoveFrom(target - 16, target, 0, DPUSH);
         }
 
-        U64 left_caps = (white_pawns << 7) & ((~(FILE_A)) << 7) & cb->occupancy[BLACK];
-
+        U64 left_caps = (white_pawns << 7) & ((~(FILE_A) << 7)) & cb->occupancy[BLACK];
         while (left_caps) {
             int target = SQ64_TO_SQ120[PopLSB(&left_caps)];
-            moves->list[moves->curr_move_index++] = MoveFrom(target - 9, target, EMPTY, 0, 0, 0, 1, EMPTY);
+            moves->list[moves->curr_move_index++] = MoveFrom(target - 7, target, 1, REGULAR);
         }
 
         U64 right_caps = ((white_pawns << 9) & (~FILE_A)) & cb->occupancy[BLACK];
-
         while (right_caps) {
             int target = SQ64_TO_SQ120[PopLSB(&right_caps)];
-            moves->list[moves->curr_move_index++] = MoveFrom(target - 9, target, EMPTY, 0, 0, 0, 1, EMPTY);
+            moves->list[moves->curr_move_index++] = MoveFrom(target - 9, target, 0, REGULAR);
         }
     }
 }

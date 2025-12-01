@@ -11,11 +11,7 @@ ChessBoard NewBoard(void) {
 
 void InitBoard(ChessBoard *cb) {
     for (int i = 0; i < NrOf_Squares; i++) {
-        if ((GetFile(i) > 8) || ((GetFile(i)) < 1) || (GetRank(i) > 9) || (GetRank(i) < 2)) {
-            cb->state[i] = BORDER;
-        } else {
-            cb->state[i] = EMPTY;
-        }
+        cb->state[i] = EMPTY;
     }
 }
 
@@ -26,21 +22,19 @@ void PrintBoard(ChessBoard *cb) {
 
         "P", "R", "K", "B", "Q", "N", /* white: P,R,K,B,Q,N */
         "p", "r", "k", "b", "q", "n", /* black: p,r,k,b,q,n */
-
-        " ",
-        "#"
+        " "
 
     };
 
     printf("\n");
     printf("+---+---+---+---+---+---+---+---+\n");
-    for (int rank = 9; rank > 1; rank--) {
+    for (int rank = 7; rank >= 0; rank--) {
         printf("|");
-        for (int file = 1; file < 9; file++) {
-            int index = rank * 10 + file;
+        for (int file = 0; file < 8; file++) {
+            int index = rank * 8 + file;
             printf(" %s |", display_characters[cb->state[index]]);
         }
-        printf(" %d\n", rank - 1);
+        printf(" %d\n", rank + 1);
         printf("+---+---+---+---+---+---+---+---+\n");
 
     }
@@ -52,11 +46,11 @@ void PrintBoard(ChessBoard *cb) {
 
 void FromFen(ChessBoard *cb, char *fen) {
 
-    int rank = 9;
-    int file = 1;
+    int rank = 7;
+    int file = 0;
 
     while (fen[0] != ' ') {
-        int index = rank * 10 + file;
+        int index = rank * 8 + file;
         switch (fen[0]) {
 
             case 'P': AddPiece(cb, WP, index); file++; break;
@@ -77,7 +71,7 @@ void FromFen(ChessBoard *cb, char *fen) {
             case 'q': AddPiece(cb, BQ, index); file++; break;
             case 'n': AddPiece(cb, BN, index); file++; break;
 
-            case '/': rank -= 1; file = 1; break;
+            case '/': rank -= 1; file = 0; break;
 
             default: file += ((int)(fen[0] - '0')); break;
 
@@ -116,24 +110,24 @@ void FromFen(ChessBoard *cb, char *fen) {
     while (fen[0] != ' ') {
         switch (fen[0]) {
 
-            case 'a': file = 1; break;
-            case 'b': file = 2; break;
-            case 'c': file = 3; break;
-            case 'd': file = 4; break;
-            case 'e': file = 5; break;
-            case 'f': file = 6; break;
-            case 'g': file = 7; break;
-            case 'h': file = 8; break;
+            case 'a': file = 0; break;
+            case 'b': file = 1; break;
+            case 'c': file = 2; break;
+            case 'd': file = 3; break;
+            case 'e': file = 4; break;
+            case 'f': file = 5; break;
+            case 'g': file = 6; break;
+            case 'h': file = 7; break;
 
 
-            case '1': rank = 2; break;
-            case '2': rank = 3; break;
-            case '3': rank = 4; break;
-            case '4': rank = 5; break;
-            case '5': rank = 6; break;
-            case '6': rank = 7; break;
-            case '7': rank = 8; break;
-            case '8': rank = 9; break;
+            case '1': rank = 0; break;
+            case '2': rank = 1; break;
+            case '3': rank = 2; break;
+            case '4': rank = 3; break;
+            case '5': rank = 4; break;
+            case '6': rank = 5; break;
+            case '7': rank = 6; break;
+            case '8': rank = 7; break;
 
             case '-': file = -1; break; //flag that there is no ep square!
 
@@ -142,7 +136,7 @@ void FromFen(ChessBoard *cb, char *fen) {
         fen++;
     }
 
-    if (file != -1) {cb->ep_square = (rank * 10 + file);}
+    if (file != -1) {cb->ep_square = (rank * 8 + file);}
     fen++;
 
     int nr_of_moves = 0;
