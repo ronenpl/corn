@@ -49,7 +49,6 @@ enum Squares {
 
 
 // General Utils (utils.c)
-
 static inline int GetRank(int index) {
     return index / 8;
 }
@@ -63,7 +62,6 @@ static inline int IsWhite(int piece_id) {
 }
 
 // Bitboard Utils (bitboard_utils.c)
-
 static inline int BitScanForward(U64 bb) {
     return __builtin_ctzll(bb);
 }
@@ -81,11 +79,10 @@ static inline int PopLSB(U64 *bb) {
 void PrintBitboard(U64 bb);
 
 /* Tables */
-
 extern int8_t SQ120_TO_SQ64[120];
 extern int8_t SQ64_TO_SQ120[64];
-// Assert Macro
 
+// Assert Macro
 #define RED   "\x1b[31m"
 #define RESET "\x1b[0m"
 

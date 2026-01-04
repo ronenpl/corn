@@ -1,21 +1,14 @@
-
 #include <stdio.h>
 #include "defs.h"
 #include "board.h"
 
 ChessBoard NewBoard(void) {
     ChessBoard temp = {0};
+    for (int i = 0; i < NrOf_Squares; i++) {
+        temp.state[i] = EMPTY;
+    }
     return temp;
 }
-
-
-void InitBoard(ChessBoard *cb) {
-    for (int i = 0; i < NrOf_Squares; i++) {
-        cb->state[i] = EMPTY;
-    }
-}
-
-
 
 void PrintBoard(ChessBoard *cb) {
     const char *display_characters[14] = {
@@ -38,8 +31,7 @@ void PrintBoard(ChessBoard *cb) {
         printf("+---+---+---+---+---+---+---+---+\n");
 
     }
-    printf("  A   B   C   D   E   F   G   H");
-    printf("\n");
+    printf("  A   B   C   D   E   F   G   H\n");
 }
 
 
@@ -169,9 +161,6 @@ void FromFen(ChessBoard *cb, char *fen) {
     }
 
     cb->fullmoves = nr_of_moves;
-
-
-
 }
 
 void ShowDiagnostics(ChessBoard *cb) {

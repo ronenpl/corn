@@ -21,8 +21,9 @@ Move MoveFrom(char from, char to, char capture, char move_code) {
 void display_move(Move move) {
     printf("--------------------------------\n");
     printf("Going from square %d to square %d\n", From(move), To(move));
+	printf("Is %s a capture\n", (move & CAPTURE_FLAG)? "" : "not");
+	printf("Move code: %d\n", MoveCode(move));
 
-    //TODO refactor given new move spec
 }
 
 void AddPiece(ChessBoard *cb, int piece_id, int sq64) {
@@ -71,7 +72,7 @@ void MakeMove(ChessBoard *cb, Move move) {
     int from = From(move);
     int to = To(move);
 
-    int is_capture_move = ((move & CAPTURE_FLAG) != 0);
+    int is_capture_move = (( move & CAPTURE_FLAG ) != 0);
 
     int piece = cb->state[from];
     int piece_color = (IsWhite(piece));

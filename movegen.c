@@ -13,25 +13,23 @@ void __attribute((constructor)) InitRayTable(void) {
 
 	for (int dir = 0; dir < 8; dir++) {
 		for (int sq = 0; sq < 120; sq++) {
+
 			U64 bb = 0ULL;
-			int ds = sq;
+			int new_sq = sq;
 			int sq64 = SQ120_TO_SQ64[sq];
 
 			if (sq64 == -1) {continue;}
 
 			while (1) {
-
-				ds += dir_offsets[dir];
-
-				if (sq < 0 ||sq >=120) { break; }
-				if (SQ120_TO_SQ64[ds] == -1) { break;}
-
-				bb |= (1ULL << SQ120_TO_SQ64[ds]);
-
+				// step along the given direction and convert to 64 format.
+				new_sq += dir_offsets[dir];	
+				// On-the-board test
+				if (SQ120_TO_SQ64[new_sq] == -1) { break;}
+				// add the square to the bitboard
+				bb |= (1ULL << SQ120_TO_SQ64[new_sq]);
 			}
 
 			ray_attacks[dir][sq64] = bb;
-
 		}
 	}
 }
@@ -72,6 +70,7 @@ void __attribute((constructor)) InitKingTable(void) {
 	}
 }
 
+
 U64 GetPositiveRayAttacks(Drctn dir, int sq120, U64 occupied) {
 
     int sq64 = SQ120_TO_SQ64[sq120];
@@ -95,6 +94,14 @@ U64 GetNegativeRayAttacks(Drctn dir, int sq120, U64 occupied) {
 
 }
 
+void ProcessU64(U64 bb, Movelist* moves, int offset, int cap, int code) {
+
+	while (bb) {
+		int target = PopLSB(&bb);
+		moves->list[moves->curr_move_index++] = MoveFrom(target + offset, target, cap, code);
+	}
+}
+
 void GeneratePseudoLegal(ChessBoard *cb, Movelist *moves) {
 
     GeneratePawnMoves(cb, moves);
@@ -106,30 +113,33 @@ void GeneratePawnMoves(ChessBoard *cb, Movelist *moves) {
     U64 empty = ~occupancy;
 
     if (cb->side) {
-        U64 white_pawns = cb->pieces[WP] & (~(RANK_1 << 56)); // Save promotion for later
+        U64 white_pawns = cb->pieces[WP] & (~(RANK_1 << 48)); // Save promotion for later
 
         U64 single_push = (white_pawns << 8) & empty;
-        while (single_push) {
-            int target = SQ64_TO_SQ120[PopLSB(&single_push)];
-            moves->list[moves->curr_move_index++] = MoveFrom(target - 8, target, 0, REGULAR );
-        }
+		ProcessU64(single_push, moves, -8, 0, REGULAR);
 
         U64 double_push = (white_pawns << 16) & (empty) & (empty << 8) & (RANK_1 << 24);
-        while (double_push) {
-            int target = SQ64_TO_SQ120[PopLSB(&double_push)];
-            moves->list[moves->curr_move_index++] = MoveFrom(target - 16, target, 0, DPUSH);
-        }
+		ProcessU64(double_push, moves, -16, 0, DPUSH);
 
         U64 left_caps = (white_pawns << 7) & ((~(FILE_A) << 7)) & cb->occupancy[BLACK];
-        while (left_caps) {
-            int target = SQ64_TO_SQ120[PopLSB(&left_caps)];
-            moves->list[moves->curr_move_index++] = MoveFrom(target - 7, target, 1, REGULAR);
-        }
+		ProcessU64(left_caps, moves, -7, 1, REGULAR);
 
         U64 right_caps = ((white_pawns << 9) & (~FILE_A)) & cb->occupancy[BLACK];
-        while (right_caps) {
-            int target = SQ64_TO_SQ120[PopLSB(&right_caps)];
-            moves->list[moves->curr_move_index++] = MoveFrom(target - 9, target, 0, REGULAR);
-        }
+		ProcessU64(right_caps, moves, -9, 1, REGULAR);
+    } else {
+
+        U64 black_pawns = cb->pieces[BP] & ~(RANK_1); // Save promotion for later
+
+        U64 single_push = (black_pawns >> 8) & empty;
+		ProcessU64(single_push, moves, 8, 0, REGULAR);
+
+        U64 double_push = (black_pawns >> 16) & (empty) & (empty >> 8) & (RANK_1 << 32);
+		ProcessU64(double_push, moves, 16, 0, DPUSH);
+
+        U64 left_caps = (black_pawns >> 7) & ((~(FILE_A) << 9)) & cb->occupancy[WHITE];
+		ProcessU64(left_caps, moves, 9, 1, REGULAR);
+
+        U64 right_caps = ((black_pawns >> 7) & (~FILE_A)) & cb->occupancy[WHITE];
+		ProcessU64(right_caps, moves, 7, 1, REGULAR);
     }
 }

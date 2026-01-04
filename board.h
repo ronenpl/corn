@@ -42,33 +42,24 @@ typedef struct {
 	int undo_top;
 } ChessBoard;
 
-/* Move Encoding Scheme */
-// TODO: Fix move encoding to pack into a short.
-// Should be possible with a capture flag and 3 bits for other move flags:
-// 0: regular
-// 1: promote to queen
-// 2: promote to knight
-// 3: promote to rook
-// 4: promote to bishop
-// 5: en passant
-// 6: castling
-// 7: double push
-// Total: 4 bits
-// Other 12 twelve bits are for from and to square (each square is 6 bits)
+/* Move Encoding Scheme 
+	BITS 0-5: The FROM square.
 
-/* A move is defined as:
-  3 + 3  +  4 + 4 + 4  +  7   +  7   = 32 bits (int)
- 000 000 0000 0000 0000 0000000 0000000
-         +--+ +--+ +--+ +-----+ +-----+
-         piece flags prom  to   from
+	BITS 6-11: The TO square.
 
-    from: the source square; where the piece is coming from.
-    to: where the piece is moving to.
+	BIT 12: Capture Flag (1 for capture, 0 otherwise)
 
-    prom: the id of the promoting piece (EMPTY if not promotion)
+	BITS 13-15: Move Codes
+		0: Regular
+		1: Castling 
+		2: En passant
+		3: Double push
+		4: Promote to rook
+		4: Promote to knight
+		6: Promote to bishop
+		7: Promote to queen
+ */
 
-    flags:  0 <- castle -- 0 <- en passant -- 0 <- double push -- 0 <- capture
-*/
 enum MoveCodes {REGULAR, CASTLE, EP, DPUSH, PR, PN, PB, PQ};
 
 // Move List Struct
@@ -79,7 +70,6 @@ typedef struct {
 
 /* BOARD METHODS*/
 ChessBoard NewBoard(void);
-void InitBoard(ChessBoard *cb);
 void PrintBoard(ChessBoard *cb);
 
 void FromFen(ChessBoard *cb, char *fen);

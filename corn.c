@@ -3,31 +3,26 @@
 #include "board.h"
 #include "movegen.h"
 
-char *STARTPOS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+char *STARTPOS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1";
 
 int main(void) {
 
 	ChessBoard cb = NewBoard();
 
-	InitBoard(&cb);
 	FromFen(&cb, STARTPOS);
 
-	MakeMove(&cb, MoveFrom(E2, E4, 0, DPUSH));
-	ShowDiagnostics(&cb);
-	MakeMove(&cb, MoveFrom(D7, D5, 0, DPUSH));
-	ShowDiagnostics(&cb);
-	MakeMove(&cb, MoveFrom(E4, E5, 0, DPUSH));
-	ShowDiagnostics(&cb);
-	MakeMove(&cb, MoveFrom(F7, F5, 0, DPUSH));
-	ShowDiagnostics(&cb);
-	MakeMove(&cb, MoveFrom(E5, F6, 0, EP));
+	MakeMove(&cb, MoveFrom(A2, A3, 0, REGULAR));	
+	PrintBoard(&cb);
 
-	ShowDiagnostics(&cb);
-
-	UnmakeMove(&cb);
-
-	ShowDiagnostics(&cb);
-
+	Movelist moves;
+	
+	GeneratePawnMoves(&cb, &moves);
+	for (int i = 0; i < moves.curr_move_index; i++) {
+		MakeMove(&cb, moves.list[i]);
+		PrintBoard(&cb);
+		UnmakeMove(&cb);
+	}
+	
 	return 0;
 
 }
